@@ -1,2 +1,6 @@
 ,orderId,action,titalQuantity,status,filled,remaining,avgFillPrice,permId,parentId,lastFillPrice,clientId,whyHeld,mktCapPrice
 0,1563,SELL,1.0,Filled,1.0,0.0,12839.25,2005100754,0,12839.25,16,,0.0
+5,1574,BUY,1.0,Filled,1.0,0.0,12842.75,2005100755,0,12842.75,16,,0.0
+11,1587,SELL,1.0,Filled,1.0,0.0,12841.5,2005100756,0,12841.5,16,,0.0
+16,1598,BUY,1.0,Filled,1.0,0.0,12842.25,2005100757,0,12842.25,16,,0.0
+17,1601,SELL,1.0,Filled,1.0,0.0,12839.5,2005100758,0,12839.5,16,,0.0
