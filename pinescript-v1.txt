@@ -1,0 +1,97 @@
+//@version=5
+
+strategy('JC Strategy', overlay=true, calc_on_every_tick=true)
+//den = 1
+
+
+// Params
+stoploss = input.float(title='Stop Loss', defval=0.002)
+takeprofit = input.float(title='Take Profit', defval=0.002)
+
+
+
+// RWI params
+length = input.int(title='RWI Length', defval=12, minval=1)
+threshold = input.float(title='RWI Threshold', defval=3, step=0.1)
+
+
+
+// Indicators 30 min
+calc30(value) =>
+    ret = request.security(syminfo.tickerid, '30', value, lookahead=barmerge.lookahead_on)
+
+
+
+ema9 = calc30(ta.ema(close,9))
+wma30 = calc30(ta.wma(close,30))
+
+
+
+// RWI Function 30m
+rwi(length, threshold) =>
+    den = calc30(ta.atr(length) * math.sqrt(length))
+    rwi_high = calc30(high - nz(low[length])) / den
+    rwi_low = calc30(nz(high[length]) - low) / den
+    is_rw = rwi_high < threshold and rwi_low < threshold
+    [is_rw, rwi_high, rwi_low]
+
+
+
+[is_rw, rwi_high, rwi_low] = rwi(length, threshold)
+
+
+
+// Strategy section
+bool bullish = ema9 > wma30
+bool rwiCrossOver = ta.crossover(rwi_high, rwi_low)
+bool rwiCrossUnder = ta.crossunder(rwi_high, rwi_low)
+long = bullish and rwiCrossOver
+short = (not bullish) and rwiCrossUnder
+
+
+
+if(long)
+    strategy.entry('Long', strategy.long, comment="Entry Long")
+
+
+
+if(short)
+    strategy.entry('Short', strategy.short, comment="Entry Short")
+
+
+
+lastEntryPrice = strategy.opentrades.entry_price(strategy.opentrades - 1)
+reasonLong = open > close
+reasonShort = open < close
+actualPrice = close
+
+
+
+if(reasonLong)
+    strategy.exit('Exit Long','Long',stop=close)
+if(reasonShort)
+    strategy.exit('Exit Short','Short',stop=close)
+
+
+
+slPriceLong = (1-stoploss)*actualPrice
+tpPriceLong = close*10 //(1+takeprofit)*actualPrice
+slPriceShort = (1+stoploss)*lastEntryPrice
+tpPriceShort = 0 //(1-takeprofit)*lastEntryPrice
+commentShort = str.tostring(slPriceShort)+','+str.tostring(tpPriceShort)
+
+
+
+strategy.exit('Exit Long','Long', stop=slPriceLong)
+strategy.exit('Exit Short','Short', stop=slPriceShort)
+
+
+
+// Plotting section
+plot(ema9, title="EMA9", color=color.new(color.orange, 0), linewidth=1)
+plot(wma30, title="WMA30", color=color.new(color.blue, 0), linewidth=1)
+
+
+
+plotchar(series = rwiCrossOver, char='L', color=color.green, size=size.auto) // RWI long signal
+plotchar(series = rwiCrossUnder, char='S', color=color.red, size=size.auto) // RWI short signal
