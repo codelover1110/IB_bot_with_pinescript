@@ -6,7 +6,8 @@ from ta.utils import *
 import time
 
 df2 = pd.DataFrame(
-    columns=['orderId', 'action', 'titalQuantity', 'status', 'filled', 'remaining', 'avgFillPrice', 'permId', 'parentId', 'lastFillPrice',
+    columns=['orderId', 'action', 'titalQuantity', 'status', 'filled', 'remaining', 'avgFillPrice', 'permId',
+             'parentId', 'lastFillPrice',
              'clientId', 'whyHeld', 'mktCapPrice'])
 j = 0
 candle = []
@@ -15,6 +16,14 @@ ib = IB()
 ib.connect('127.0.0.1', 4002, clientId=16, timeout=0)
 
 mnq_fut_contract = Future('MNQ', '202306', 'CME')
+
+
+def order_status(trade):
+    if trade.orderStatus.status == 'Filled':
+        fill = trade.fills[-1]
+
+        print(
+            f'{fill.time} - {fill.execution.side} {fill.contract.symbol} {fill.execution.shares} @ {fill.execution.avgPrice}')
 
 
 def strategy_entry(df2, j):
@@ -102,7 +111,11 @@ def strategy_entry(df2, j):
     # request market data to get the current price
     ticker = ib.reqTickers(mnq_fut_contract)[0]
     current_price = ticker.marketPrice()
-
+    print("current price:", current_price)
+    if current_price:
+        pass
+    else:
+        current_price = 0.0
     # calculate the prices for the stop loss and take profit orders
     stop_loss_price = round(current_price * (1 - 0.002), 2)
     take_profit_price = round(current_price * (1 + 0.002), 2)
@@ -130,9 +143,12 @@ def strategy_entry(df2, j):
             else:
                 print("Going to open BUY Trade")
                 trade = ib.placeOrder(mnq_fut_contract, MarketOrder('BUY', 1))
-                while True:
-                    if trade.orderStatus.filled == 'Filled':
-                        break
+                trade.filledEvent += order_status
+                ib.sleep(5)
+                # while True:
+                #     if trade.orderStatus.filled == 'Filled':
+                #         print("Order Filled")
+                #         break
 
                 df2.loc[j] = [trade.orderStatus.orderId, trade.order.action, trade.order.totalQuantity,
                               trade.orderStatus.status, trade.orderStatus.filled, trade.orderStatus.remaining,
@@ -142,9 +158,12 @@ def strategy_entry(df2, j):
         else:
             print("Going to open BUY Trade")
             trade = ib.placeOrder(mnq_fut_contract, MarketOrder('BUY', 1))
-            while True:
-                if trade.orderStatus.filled == 'Filled':
-                    break
+            trade.filledEvent += order_status
+            ib.sleep(5)
+            # while True:
+            #     if trade.orderStatus.filled == 'Filled':
+            #         print("Order Filled")
+            #         break
             df2.loc[j] = [trade.orderStatus.orderId, trade.order.action, trade.order.totalQuantity,
                           trade.orderStatus.status, trade.orderStatus.filled, trade.orderStatus.remaining,
                           trade.orderStatus.avgFillPrice, trade.orderStatus.permId, trade.orderStatus.parentId,
@@ -161,9 +180,12 @@ def strategy_entry(df2, j):
             else:
                 print("Going to open SELL Trade")
                 trade = ib.placeOrder(mnq_fut_contract, MarketOrder('SELL', 1))
-                while True:
-                    if trade.orderStatus.filled == 'Filled':
-                        break
+                trade.filledEvent += order_status
+                ib.sleep(5)
+                # while True:
+                #     if trade.orderStatus.filled == 'Filled':
+                #         print("Order Filled")
+                #         break
                 df2.loc[j] = [trade.orderStatus.orderId, trade.order.action, trade.order.totalQuantity,
                               trade.orderStatus.status, trade.orderStatus.filled, trade.orderStatus.remaining,
                               trade.orderStatus.avgFillPrice, trade.orderStatus.permId, trade.orderStatus.parentId,
@@ -172,9 +194,12 @@ def strategy_entry(df2, j):
         else:
             print("Going to open SELL Trade")
             trade = ib.placeOrder(mnq_fut_contract, MarketOrder('SELL', 1))
-            while True:
-                if trade.orderStatus.filled == 'Filled':
-                    break
+            trade.filledEvent += order_status
+            ib.sleep(5)
+            # while True:
+            #     if trade.orderStatus.filled == 'Filled':
+            #         print("Order Filled")
+            #         break
             df2.loc[j] = [trade.orderStatus.orderId, trade.order.action, trade.order.totalQuantity,
                           trade.orderStatus.status, trade.orderStatus.filled, trade.orderStatus.remaining,
                           trade.orderStatus.avgFillPrice, trade.orderStatus.permId, trade.orderStatus.parentId,
@@ -194,4 +219,3 @@ if __name__ == "__main__":
         time.sleep(18)
         # strategy_exit()
         j = j + 1
-

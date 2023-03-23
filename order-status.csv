@@ -1,0 +1,2 @@
+,orderId,action,titalQuantity,status,filled,remaining,avgFillPrice,permId,parentId,lastFillPrice,clientId,whyHeld,mktCapPrice
+0,1563,SELL,1.0,Filled,1.0,0.0,12839.25,2005100754,0,12839.25,16,,0.0
