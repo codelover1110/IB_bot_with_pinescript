@@ -216,6 +216,6 @@ if __name__ == "__main__":
 
     while True:
         strategy_entry(df2, j)
-        time.sleep(18)
+        time.sleep(1800)
         # strategy_exit()
         j = j + 1
