@@ -117,8 +117,8 @@ def strategy_entry(df2, j):
     print("===========================================================================")
     print("candle", candle, len(candle))
 
-    df = ib.reqAllOpenOrders()
-    print(df)
+    # df = ib.reqAllOpenOrders()
+    # print(df)
 
     if candleGreen:
         if len(candle) > 1:
